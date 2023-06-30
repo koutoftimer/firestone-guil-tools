@@ -1,7 +1,7 @@
 #!./venv/bin/python
 import sqlite3
+import subprocess
 from pathlib import Path
-from subprocess import getoutput
 from typing import Iterable
 
 import pyautogui
@@ -59,7 +59,7 @@ def take_donations_screenshots():
 
 
 def ocr_screenshot(screenshot: str) -> dict[str, int]:
-    raw = getoutput(fr'''
+    raw = subprocess.getoutput(fr'''
         tesseract {screenshot} - \
             --psm 6 --oem 0 --tessdata-dir ./tessdata/ \
             -l eng+rus+chi_sim+chi_tra+jpn
@@ -148,6 +148,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # TODO: Find and focus Firestone's game window
-    pyautogui.sleep(5)
+    # TODO: rewrite with python ffi for libx11
+    subprocess.getoutput(
+        "xdotool search --name '^Firestone$' windowactivate --sync", )
     main()
