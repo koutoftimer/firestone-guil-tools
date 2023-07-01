@@ -1,3 +1,9 @@
 .*.sh
 *.png
 tessdata/
+*.swp
+*/*.swp
+*/**/*.swp
+__pycache__/
+*/__pycache__/
+*/**/__pycache__/
