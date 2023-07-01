@@ -1,10 +1,13 @@
 #!./venv/bin/python
+import json
+import logging
+import os
 import sqlite3
 import subprocess
 from pathlib import Path
 from typing import Iterable
 
-import pyautogui
+import requests
 
 DONATIONS_RECT = 448, 174, 535, 885
 
@@ -14,6 +17,7 @@ class MainScreen:
 
     @staticmethod
     def go_to_guild_screen():
+        import pyautogui
         pyautogui.moveTo(*MainScreen.GUILD_BUTTON_LOC)
         pyautogui.click()
         pyautogui.sleep(1)
@@ -24,6 +28,7 @@ class GuildScreen:
 
     @staticmethod
     def open_treasury():
+        import pyautogui
         pyautogui.moveTo(*GuildScreen.TREASURE_BUTTON_LOC)
         pyautogui.click()
         pyautogui.sleep(1)
@@ -33,6 +38,7 @@ DONATION_SCREENSHOTS = [Path('1.png'), Path('2.png')]
 
 
 def take_donations_screenshots():
+    import pyautogui
     for path in DONATION_SCREENSHOTS:
         if path.exists():
             path.unlink()
@@ -87,6 +93,7 @@ DB_FILENAME = './guild.db'
 
 
 def save_donations_to_db(data: dict[str, int]):
+    logging.info(f'Updating donations: {data}')
     update_member_status(data.keys())
     create_table = '''
     CREATE TABLE IF NOT EXISTS donations (
@@ -142,15 +149,31 @@ def update_member_status(active_members: Iterable[str]):
     conn.commit()
 
 
+def push_updates_to_pythonanywhere(data: dict[str, int]):
+    sync_host = os.environ.get('SYNC_HOST', 'outoftime.pythonanywhere.com')
+    logging.info(f"Sync DB with {sync_host}: {data}")
+    with open('auth.json') as fp:
+        auth = json.load(fp)
+    body = {
+        'auth': auth,
+        'data': data,
+    }
+    requests.post(f'https://{sync_host}/firestone/update', json=body)
+
+
 def main():
+    import pyautogui
+    logging.getLogger().setLevel(logging.INFO)
     pyautogui.FAILSAFE = True
+    # TODO: rewrite with python ffi for libx11
+    subprocess.getoutput(
+        "xdotool search --name '^Firestone$' windowactivate --sync")
     take_donations_screenshots()
     data = ocr(DONATION_SCREENSHOTS)
     save_donations_to_db(data)
+    # replicate data to pythonanywhere
+    push_updates_to_pythonanywhere(data)
 
 
 if __name__ == "__main__":
-    # TODO: rewrite with python ffi for libx11
-    subprocess.getoutput(
-        "xdotool search --name '^Firestone$' windowactivate --sync", )
     main()
