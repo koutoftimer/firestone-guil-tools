@@ -45,7 +45,6 @@ def take_donations_screenshots():
     pyautogui.scroll(50)
     pyautogui.sleep(1)
     # top donators
-    pyautogui.screenshot('full.png')
     pyautogui.screenshot(DONATION_SCREENSHOTS[0], region=DONATIONS_RECT)
     pyautogui.sleep(5)
     # scroll bottom
@@ -84,6 +83,9 @@ def ocr(screenshots: list[Path]):
     return data
 
 
+DB_FILENAME = './guild.db'
+
+
 def save_donations_to_db(data: dict[str, int]):
     update_member_status(data.keys())
     create_table = '''
@@ -95,7 +97,7 @@ def save_donations_to_db(data: dict[str, int]):
         FOREIGN KEY(user_id) REFERENCES user(id)
     )
     '''
-    conn = sqlite3.connect('guild.db')
+    conn = sqlite3.connect(DB_FILENAME)
     cur = conn.cursor()
     cur.execute(create_table)
     cur.executemany(
@@ -117,7 +119,7 @@ def update_member_status(active_members: Iterable[str]):
         comment TEXT
     )
     '''
-    conn = sqlite3.connect('guild.db')
+    conn = sqlite3.connect(DB_FILENAME)
     cur = conn.cursor()
     cur.execute(create_table)
 
