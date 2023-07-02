@@ -31,6 +31,7 @@ def save_donations_to_db(data: dict[str, int]):
 
 
 def update_member_status(active_members: Iterable[str]):
+    from itertools import chain
     create_table = '''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY ASC,
@@ -45,21 +46,20 @@ def update_member_status(active_members: Iterable[str]):
     cur = conn.cursor()
     cur.execute(create_table)
 
-    # mark active member as leavers
-    user_list = ','.join(f'"{v}"' for v in active_members)
-    cur.execute(
-        'UPDATE users SET status = "left" '
-        f'WHERE users.status = "active" AND users.nickname NOT IN ({user_list})'
-    )
-    # add new members
+    cur.execute("SELECT nickname FROM users WHERE status = 'active'")
+    old_active = list(chain.from_iterable(cur.fetchall()))
+    print(old_active)
+
     cur.executemany(
-        'INSERT OR IGNORE INTO users (nickname, status) VALUES (?, "active")',
-        zip(active_members),
+        "UPDATE users SET status = 'left' WHERE nickname IN (?)",
+        zip(set(old_active) - set(active_members)),
     )
-    # activate existing members
     cur.executemany(
-        'UPDATE users SET status = "active" WHERE users.nickname = ?',
-        zip(active_members),
+        '''
+        INSERT INTO users (nickname, status) VALUES (?, 'active') 
+        ON CONFLICT (nickname) DO UPDATE SET status = 'active'
+        ''',
+        zip(set(active_members) - set(old_active)),
     )
     conn.commit()
 

@@ -8,7 +8,7 @@ from pathlib import Path
 import requests
 import pyautogui
 
-from .db import save_donations_to_db
+from db import save_donations_to_db
 
 DONATIONS_RECT = 448, 174, 535, 885
 
@@ -104,13 +104,16 @@ def push_updates_to_pythonanywhere(data: dict[str, int]):
 def main():
     logging.getLogger().setLevel(logging.DEBUG)
     pyautogui.FAILSAFE = True
+
     # TODO: rewrite with python ffi for libx11
     subprocess.getoutput(
         "xdotool search --name '^Firestone$' windowactivate --sync")
     take_donations_screenshots()
+
     data = ocr(DONATION_SCREENSHOTS)
     logging.debug(f'OCR {data}')
     save_donations_to_db(data)
+
     # replicate data to pythonanywhere
     push_updates_to_pythonanywhere(data)
 
