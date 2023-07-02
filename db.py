@@ -36,6 +36,8 @@ def update_member_status(active_members: Iterable[str]):
         id INTEGER PRIMARY KEY ASC,
         nickname TEXT UNIQUE NOT NULL,
         status TEXT NOT NULL,
+        changed_at NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        created_at NOT NULL DEFAULT CURRENT_TIMESTAMP,
         comment TEXT
     )
     '''
@@ -126,8 +128,7 @@ def alter_users_table():
 
     END;
     '''
-    # conn = sqlite3.connect(DB_FILENAME)
-    conn = sqlite3.connect('./guild.db2')
+    conn = sqlite3.connect(DB_FILENAME)
     cur = conn.cursor()
     cur.executescript(migration)
 
