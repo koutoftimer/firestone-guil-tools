@@ -1,1 +1,5 @@
 pyautogui
+pytesseract
+sqlalchemy
+requests
+opencv-python
