@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column,
 
 DB_FILENAME = 'guild.db'
 engine = sa.create_engine(f"sqlite:///{DB_FILENAME}", echo=True, future=True)
+session = Session(engine)
 
 
 class Base(DeclarativeBase):
@@ -45,27 +46,25 @@ Base.metadata.create_all(engine)
 
 
 def save_donations_to_db(data: dict[str, int]):
-    with Session(engine) as session:
-        # mark active guild member
-        session.query(User).filter(User.nick.in_(data.keys())).update(
-            {User.status: 'active'})
-        # mark members that left the guild
-        session.query(User).filter(User.nick.not_in(data.keys())).update(
-            {User.status: 'left'})
-        # add new members
-        old = set(nick[0] for nick in session.query(User.nick).filter(
-            User.nick.in_(data.keys())).all())
-        new = set(data.keys())
-        session.add_all(User(nick=nick, status='active') for nick in new - old)
-        session.commit()
+    # mark active guild member
+    session.query(User).filter(User.nick.in_(data.keys())).update(
+        {User.status: 'active'})
+    # mark members that left the guild
+    session.query(User).filter(User.nick.not_in(data.keys())).update(
+        {User.status: 'left'})
+    # add new members
+    old = set(nick[0] for nick in session.query(User.nick).filter(
+        User.nick.in_(data.keys())).all())
+    new = set(data.keys())
+    session.add_all(User(nick=nick, status='active') for nick in new - old)
+    session.commit()
 
-        # add new donation records
-        nick_to_id = dict(
-            session.query(User.nick,
-                          User.id).filter(User.nick.in_(data.keys())))
-        session.add_all(
-            Donations(
-                user_id=nick_to_id[nick],
-                amount=amount,
-            ) for nick, amount in data.items())
-        session.commit()
+    # add new donation records
+    nick_to_id = dict(
+        session.query(User.nick, User.id).filter(User.nick.in_(data.keys())))
+    session.add_all(
+        Donations(
+            user_id=nick_to_id[nick],
+            amount=amount,
+        ) for nick, amount in data.items())
+    session.commit()
