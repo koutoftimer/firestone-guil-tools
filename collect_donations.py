@@ -13,6 +13,7 @@ import requests
 import sqlalchemy.orm as orm
 
 from db import save_donations_to_db, engine, User
+from corrections import NICK_CORRECTIONS
 
 DONATIONS_RECT = 448, 174, 535, 885
 
@@ -105,14 +106,6 @@ def ocr_screenshot(screenshot: str) -> dict[str, int]:
     #         -l eng+rus
     # ''')
     # # -l eng+rus+chi_sim+chi_tra+jpn
-    NICK_CORRECTIONS = {
-        'eItooth': 'eltooth',
-        'ka|e|2023': 'kalel2023',
-        'Voron"': 'Voron^',
-        'iack.e.hayes': 'jack.e.hayes',
-        'シ ヤ ガー': 'ジャガー',
-        'シ ヤ ガ 一': 'ジャガー',
-    }
     data = {}
     for line in raw.splitlines():
         if ' ' not in line:
