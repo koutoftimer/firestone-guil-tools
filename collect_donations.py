@@ -107,6 +107,8 @@ def ocr_screenshot(screenshot: str) -> dict[str, int]:
     # # -l eng+rus+chi_sim+chi_tra+jpn
     NICK_CORRECTIONS = {
         'eItooth': 'eltooth',
+        'ka|e|2023': 'kalel2023',
+        'Voron"': 'Voron^',
         'iack.e.hayes': 'jack.e.hayes',
         'シ ヤ ガー': 'ジャガー',
         'シ ヤ ガ 一': 'ジャガー',
