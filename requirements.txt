@@ -3,3 +3,4 @@ pytesseract
 sqlalchemy
 requests
 opencv-python
+SQLAlchemy-serializer

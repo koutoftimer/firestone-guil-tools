@@ -2,13 +2,14 @@ import datetime
 
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column, Session
+from sqlalchemy_serializer import SerializerMixin
 
 DB_FILENAME = 'guild.db'
 engine = sa.create_engine(f"sqlite:///{DB_FILENAME}", echo=True, future=True)
 session = Session(engine)
 
 
-class Base(DeclarativeBase):
+class Base(DeclarativeBase, SerializerMixin):
     pass
 
 
@@ -32,6 +33,8 @@ class User(Base):
 
 class Donations(Base):
     __tablename__ = 'donations'
+
+    serialize_rules = ['-user']
 
     id: Mapped[int] = mapped_column(primary_key=True)
     amount: Mapped[int]
